@@ -8,25 +8,34 @@ import {
   StatusBar,
   NativeSyntheticEvent,
   NativeScrollEvent,
+  useWindowDimensions,
+  Animated,
 } from "react-native";
 import React from "react";
 
-const LIST_COUNT = 20;
+const LIST_STATIC = {
+  count: 20,
+  padding: 16,
+  gap: 14,
+};
 
-const ScrollWheel = () => {
+const VerticalScrollWheel = () => {
+  const { height } = useWindowDimensions();
   const [currentIndex, setCurrentIndex] = React.useState(0);
-  const [listItemHeight, setListItemHeight] = React.useState(0);
 
   const handleUpdateIndex = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
-    const contentOffsetY = e.nativeEvent.contentOffset.y;
-    const index = Math.round(contentOffsetY / (listItemHeight - 32));
+    const { contentSize, contentOffset } = e.nativeEvent;
+    // const index = Math.round(contentOffset.y / (listItemHeight - 32));
+    const index = 0;
 
-    console.log("Index", currentIndex);
+    console.log("contentOffsetY", contentOffset.y);
+    console.log("contentSize.height", contentSize.height);
+    console.log("height", height);
 
-    if (contentOffsetY <= 0) {
+    if (contentOffset.y <= 0) {
       return setCurrentIndex(0);
-    } else if (index >= LIST_COUNT) {
-      return setCurrentIndex(LIST_COUNT);
+    } else if (index >= LIST_STATIC.count) {
+      return setCurrentIndex(LIST_STATIC.count);
     }
     setCurrentIndex(index);
   };
@@ -34,19 +43,16 @@ const ScrollWheel = () => {
   return (
     <SafeAreaView style={styles.container}>
       <FlatList
-        data={new Array(LIST_COUNT).fill("")}
+        data={new Array(LIST_STATIC.count).fill("")}
         contentContainerStyle={styles.list}
         keyExtractor={(_, idx) => String(idx)}
         onScroll={handleUpdateIndex}
         renderItem={({ index }) => (
-          <View
+          <Animated.View
             style={[
               styles.list_item,
               // { transform: [{ scale: 0.5 }] }
             ]}
-            onLayout={({ nativeEvent }) => {
-              setListItemHeight(nativeEvent.layout.height);
-            }}
           >
             <Image
               source={require("./images/fruits.jpg")}
@@ -64,7 +70,7 @@ const ScrollWheel = () => {
                 industry.
               </Text>
             </View>
-          </View>
+          </Animated.View>
         )}
       />
     </SafeAreaView>
@@ -78,7 +84,10 @@ const styles = StyleSheet.create({
     backgroundColor: "#f3f3f3",
     marginTop: (StatusBar.currentHeight || 0) + 15,
   },
-  list: { gap: 14, padding: 16 },
+  list: {
+    gap: LIST_STATIC.gap,
+    padding: LIST_STATIC.padding,
+  },
   list_item: {
     gap: 15,
     padding: 15,
@@ -95,4 +104,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default ScrollWheel;
+export default VerticalScrollWheel;

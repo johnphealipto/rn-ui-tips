@@ -1,10 +1,10 @@
-import ScrollWheel from "@/scroll-wheel";
+import VerticalScrollWheel from "@/vertical-scroll-wheel";
 import { StyleSheet, View } from "react-native";
 
 export default function App() {
   return (
     <View style={styles.container}>
-      <ScrollWheel />
+      <VerticalScrollWheel />
     </View>
   );
 }
