@@ -10,6 +10,7 @@ import {
   NativeScrollEvent,
   useWindowDimensions,
   Animated,
+  ScrollView,
 } from "react-native";
 import React from "react";
 
@@ -51,7 +52,9 @@ const VerticalScrollWheel = () => {
           <Animated.View
             style={[
               styles.list_item,
-              // { transform: [{ scale: 0.5 }] }
+              {
+                transform: [{ scale: 1 }, { rotateX: "-25deg" }],
+              },
             ]}
           >
             <Image
