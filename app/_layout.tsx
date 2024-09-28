@@ -22,10 +22,11 @@ export default function RootLayout() {
   }
 
   return (
-    <Stack>
+    <Stack screenOptions={{ headerBackTitleVisible: false }}>
+      <Stack.Screen name="index" options={{ title: "React Native UI Tips" }} />
       <Stack.Screen
-        name="index"
-        options={{ title: "Animated Check", headerShadowVisible: false }}
+        name="animated-check"
+        options={{ title: "Animated Check" }}
       />
       <Stack.Screen name="+not-found" />
     </Stack>
