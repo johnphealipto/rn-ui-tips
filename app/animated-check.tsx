@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import CheckItem from "@/components/animated-check/check-item";
 import { CUISINES } from "@/constants/app";
+import { COLORS } from "@/constants/colors";
 
 const AnimatedCheck = () => {
   const [selectedCuisines, setSelectedCuisines] = useState<string[]>([]);
@@ -37,7 +38,7 @@ const AnimatedCheck = () => {
 
       <View style={styles.reset_cont}>
         <Pressable style={{ padding: 5 }} onPress={handleReset}>
-          <Text style={{ color: "#666666" }}>Reset</Text>
+          <Text style={{ color: COLORS.text }}>Reset</Text>
         </Pressable>
       </View>
     </View>
@@ -48,7 +49,7 @@ export default AnimatedCheck;
 
 const styles = StyleSheet.create({
   container: { flex: 1, justifyContent: "center", gap: 10, padding: 20 },
-  title: { fontWeight: "600", fontSize: 18 },
+  title: { fontWeight: "600", fontSize: 18, color: COLORS.title },
   cuisines_wrap: { flexDirection: "row", flexWrap: "wrap", gap: 5 },
   reset_cont: { alignItems: "center" },
 });

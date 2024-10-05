@@ -9,6 +9,7 @@ import Animated, {
   withSpring,
   withTiming,
 } from "react-native-reanimated";
+import { COLORS } from "@/constants/colors";
 
 const ICON_SIZE = 14;
 const ORANGE_COLOR = "#FC7F3C";
@@ -29,26 +30,20 @@ const CheckItem = ({
   }, [checked, expand]);
 
   const animatedContStyle = useAnimatedStyle(() => {
-    const backgroundColor = interpolateColor(
-      expand.value,
-      [0, 1],
-      ["transparent", "rgba(252,127,60,0.1)"]
-    );
-
     const borderColor = interpolateColor(
       expand.value,
       [0, 1],
-      ["#e0e0e0", ORANGE_COLOR]
+      [COLORS.foreground, COLORS.orange]
     );
 
-    return { backgroundColor, borderColor };
+    return { borderColor };
   });
 
   const animatedTextStyle = useAnimatedStyle(() => {
     const color = interpolateColor(
       expand.value,
       [0, 1],
-      ["#242424", ORANGE_COLOR]
+      [COLORS.text, COLORS.orange]
     );
 
     return { color };
@@ -101,5 +96,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     borderWidth: 1,
     borderRadius: 100,
+    backgroundColor: COLORS.foreground,
   },
 });
