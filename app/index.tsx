@@ -2,30 +2,22 @@ import React from "react";
 import { FlatList, StyleSheet, Text, View } from "react-native";
 import { Href, Link } from "expo-router";
 import { COLORS } from "@/constants/colors";
-
-const TIPS: {
-  link: Href;
-  label: string;
-}[] = [
-  {
-    link: "/animated-check",
-    label: "Animated Check Button",
-  },
-  {
-    link: "/animated-check",
-    label: "Animated Check Button",
-  },
-];
+import { RN_TIPS } from "@/constants/app";
 
 const HomePage = () => {
   return (
     <View style={styles.container}>
       <FlatList
-        data={TIPS}
+        data={RN_TIPS}
         keyExtractor={(_, idx) => idx.toString()}
+        style={{ flex: 1, paddingVertical: 20 }}
         contentContainerStyle={{ gap: 20 }}
-        renderItem={({ item }) => (
+        renderItem={({ item, index }) => (
           <Link href={item.link} style={styles.link}>
+            <Text style={{ color: "#cacaca", fontWeight: "700" }}>
+              {String(index + 1).padStart(2, "0")}.
+            </Text>
+            {"  "}
             {item.label}
           </Link>
         )}
@@ -37,6 +29,6 @@ const HomePage = () => {
 export default HomePage;
 
 const styles = StyleSheet.create({
-  container: { padding: 20 },
+  container: { flex: 1, paddingHorizontal: 20 },
   link: { backgroundColor: COLORS.foreground, padding: 15 },
 });

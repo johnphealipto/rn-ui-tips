@@ -46,6 +46,10 @@ export default function RootLayout() {
         name="animated-check"
         options={{ title: "Animated Check" }}
       />
+      <Stack.Screen
+        name="swipe-to-reveal"
+        options={{ title: "Swipe To Reveal" }}
+      />
       <Stack.Screen name="+not-found" />
     </Stack>
   );
