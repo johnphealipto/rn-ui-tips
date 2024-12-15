@@ -1,6 +1,6 @@
 import React from "react";
 import { FlatList, StyleSheet, Text, View } from "react-native";
-import { Href, Link } from "expo-router";
+import { Link } from "expo-router";
 import { COLORS } from "@/constants/colors";
 import { RN_TIPS } from "@/constants/app";
 
