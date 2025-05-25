@@ -12,6 +12,10 @@ export const RN_TIPS: {
     link: "/swipe-to-reveal",
     label: "Swipe to reveal",
   },
+  {
+    link: "/draggable-wallet-card",
+    label: "Draggable wallet card",
+  },
 ];
 
 export const CUISINES = [

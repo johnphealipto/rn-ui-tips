@@ -1,4 +1,4 @@
-import { Dimensions, StyleSheet, Text, View } from "react-native";
+import { Dimensions, Text, View } from "react-native";
 import React from "react";
 import Animated, {
   useAnimatedScrollHandler,
@@ -48,7 +48,3 @@ const SwipeToReveal = () => {
 };
 
 export default SwipeToReveal;
-
-const styles = StyleSheet.create({
-  container: { justifyContent: "center" },
-});
