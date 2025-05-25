@@ -1,49 +1,130 @@
-import { Dimensions, Pressable, StyleSheet, Text, View } from "react-native";
+import { triggerHapticFeedback } from "@/constants/utils";
+import { useState } from "react";
+import {
+  Dimensions,
+  ImageBackground,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 import { GestureDetector, Gesture } from "react-native-gesture-handler";
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
+  interpolate,
   withSpring,
+  withTiming,
 } from "react-native-reanimated";
 
+const CARD_HEIGHT = 170;
+const WALLET_HEIGHT = 200;
 const WALLET_RADIUS = 15;
+const CARD_OUT_OFFSET_Y = -160;
+const SECONDARY_CARD_TOP = -35;
 const WALLET_WIDTH = Dimensions.get("screen").width - 30;
+
+const AnimatedImageBackground =
+  Animated.createAnimatedComponent(ImageBackground);
 
 const DraggableWalletCard = () => {
   const rotation = useSharedValue(0);
-  const isHidden = useSharedValue(false);
+  const isHidden = useSharedValue(0);
+  const isCardOut = useSharedValue(0);
   const offset = useSharedValue({ x: 0, y: 0 });
 
-  const animatedStyles = useAnimatedStyle(() => {
+  const [isHiddenState, setIsHiddenState] = useState(false);
+
+  const animatedWalletStyle = useAnimatedStyle(() => {
+    const scale = interpolate(
+      offset.value.y,
+      [0, CARD_OUT_OFFSET_Y],
+      [1, 0.9],
+      // isCardOut.value ? [1, 0.9] : [0.9, 1],
+      "clamp"
+    );
+
+    return { transform: [{ scale: withTiming(scale) }] };
+  }, [offset]);
+
+  const animatedSecondaryCardStyle = useAnimatedStyle(() => {
+    const scale = interpolate(
+      offset.value.y,
+      [0, CARD_OUT_OFFSET_Y],
+      [0.95, 0.85],
+      // isCardOut.value ? [0.95, 0.85] : [0.85, 0.95],
+      "clamp"
+    );
+    const top = interpolate(
+      isHidden.value,
+      [0, 1],
+      [SECONDARY_CARD_TOP, -4],
+      "clamp"
+    );
+    return { top: withSpring(top), transform: [{ scale: withTiming(scale) }] };
+  }, [offset, isHidden]);
+
+  const animatedPrimaryCardStyle = useAnimatedStyle(() => {
+    const scale = interpolate(
+      offset.value.y,
+      [0, CARD_OUT_OFFSET_Y],
+      [1, 1.05],
+      // isCardOut.value ? [1, 1.05] : [1.05, 1],
+      "clamp"
+    );
+    const top = interpolate(
+      isHidden.value,
+      [0, 1],
+      [0, -(SECONDARY_CARD_TOP / 2)],
+      "clamp"
+    );
+    const zIndex = interpolate(isCardOut.value, [0, 1], [3, 5], "clamp");
+
     return {
+      zIndex,
+      top: withSpring(top),
       transform: [
-        // { translateX: offset.value.x },
-        { translateY: offset.value.y },
         { rotate: `${rotation.value}deg` },
+        { translateY: withSpring(offset.value.y) },
+        { scale },
       ],
     };
-  }, [offset, rotation]);
+  }, [offset, isHidden, rotation]);
 
   const onDragGesture = Gesture.Pan()
     .onUpdate((e) => {
+      if (isHidden.value) return; // If hidden, do nothing
+
       // Calculate angle based on X and Y drag (in radians)
       const _radians = Math.atan2(e.translationY, e.translationX);
       const _degrees = _radians * (180 / Math.PI); // Convert to degrees
       const adjusted = _degrees + 90; // Adjusted
-      const normalized = adjusted % 10; // Normalize by 45deg
-      rotation.value = -normalized; // Invert the angle for more realistic gesture
+      const normalized = adjusted % 45; // Normalize by 45deg
+      rotation.value = normalized; // Invert the angle for more realistic gesture
 
       // Set offset to values
       offset.value = {
         x: e.translationX,
         y: e.translationY,
       };
+
+      // console.log(e.translationY);
+
+      // if (e.translationY <= CARD_OUT_OFFSET_Y) return;
+
+      // let isReset = !isCardOut.value;
+
+      // if (isReset) {
+      //   isCardOut.value = 1;
+      // } else {
+      //   isCardOut.value = 0;
+      // }
     })
     .onEnd(() => {
-      rotation.value = withSpring(0);
+      rotation.value = 0;
       offset.value = {
-        x: withSpring(0),
-        y: withSpring(0),
+        x: 0,
+        y: 0,
       };
     });
 
@@ -51,28 +132,47 @@ const DraggableWalletCard = () => {
 
   return (
     <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-      <Animated.View style={styles.wallet}>
+      <View style={styles.container}>
+        <Animated.View style={[styles.wallet_back, animatedWalletStyle]} />
         <GestureDetector gesture={composed}>
           <Animated.View
-            style={[styles.card, styles.primary_card, animatedStyles]}
+            style={[styles.card, styles.primary_card, animatedPrimaryCardStyle]}
           >
             <Text>DraggableWallard</Text>
             <Text>DraggableWallard</Text>
           </Animated.View>
         </GestureDetector>
-        <View style={[styles.card, styles.secondary_card]}>
+        <Animated.View
+          style={[
+            styles.card,
+            styles.secondary_card,
+            animatedSecondaryCardStyle,
+          ]}
+        >
           <Text>DraggableWalletCard</Text>
           <Text>DraggableWalletCard</Text>
-        </View>
-        <View style={[styles.wallet_front]}>
+        </Animated.View>
+        <AnimatedImageBackground
+          source={require("../../assets/others/leather-texture.jpg")}
+          style={[styles.wallet_front, animatedWalletStyle]}
+          borderRadius={WALLET_RADIUS}
+        >
           <Pressable
             style={styles.view_balance}
-            onPress={() => (isHidden.value = !isHidden.value)}
+            onPress={() => {
+              setTimeout(() => {
+                triggerHapticFeedback();
+              }, 100);
+              isHidden.value = isHidden.value ? 0 : 1;
+              setIsHiddenState((prevState) => !prevState);
+            }}
           >
-            <Text style={{ color: "white" }}>Hide Balance</Text>
+            <Text style={{ fontSize: 12, color: "white" }}>
+              {isHiddenState ? "Show" : "Hide"} Balance
+            </Text>
           </Pressable>
-        </View>
-      </Animated.View>
+        </AnimatedImageBackground>
+      </View>
     </View>
   );
 };
@@ -80,47 +180,57 @@ const DraggableWalletCard = () => {
 export default DraggableWalletCard;
 
 const styles = StyleSheet.create({
-  wallet: {
-    height: 200,
-    borderRadius: WALLET_RADIUS,
+  container: {
     position: "relative",
-    backgroundColor: "#1e1e1e",
+
+    shadowRadius: 10,
+    shadowOpacity: 0.2,
+    shadowColor: "#000",
+    elevation: 5, // Android
+    shadowOffset: { width: 0, height: 10 },
+  },
+  wallet_back: {
     width: WALLET_WIDTH,
+    height: WALLET_HEIGHT,
+    backgroundColor: "#1e1e1e",
+    borderRadius: WALLET_RADIUS,
+    overflow: "hidden",
   },
   wallet_front: {
-    height: 170,
-    borderRadius: WALLET_RADIUS,
-    position: "absolute",
     bottom: 0,
-    backgroundColor: "#1e1e1e",
+    zIndex: 4,
+    height: 170,
     width: WALLET_WIDTH,
-    zIndex: 3,
+    position: "absolute",
+    borderRadius: WALLET_RADIUS,
+    backgroundColor: "#1e1e1e",
   },
   view_balance: {
     right: 20,
     bottom: 20,
-    paddingVertical: 10,
+    paddingVertical: 8,
     position: "absolute",
     paddingHorizontal: 15,
     borderRadius: WALLET_RADIUS * 5,
-    backgroundColor: "rgba(221, 43, 43, 0.5)",
+    backgroundColor: "rgba(30,30,30,0.85)",
   },
   card: {
     left: 10,
-    height: 150,
+    height: CARD_HEIGHT,
     position: "absolute",
     width: WALLET_WIDTH - 20,
     marginHorizontal: "auto",
     borderRadius: WALLET_RADIUS,
   },
   primary_card: {
+    zIndex: 3,
     backgroundColor: "red",
-    zIndex: 2,
   },
   secondary_card: {
-    zIndex: 1,
-    top: -30,
+    zIndex: 2,
     backgroundColor: "blue",
-    transform: [{ scale: 0.95 }],
   },
 });
+
+// If primary card is out (z-index: 5 & scale: 1.25),
+// Other scale should be 0.95
