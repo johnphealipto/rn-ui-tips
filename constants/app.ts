@@ -14,7 +14,7 @@ export const RN_TIPS: {
   },
   {
     link: "/draggable-wallet-card",
-    label: "Draggable wallet card",
+    label: "Animated Wallet",
   },
 ];
 

@@ -22,56 +22,79 @@ const WALLET_HEIGHT = 200;
 const WALLET_RADIUS = 15;
 const CARD_OUT_OFFSET_Y = -160;
 const SECONDARY_CARD_TOP = -35;
+
 const WALLET_WIDTH = Dimensions.get("screen").width - 30;
 
 const AnimatedImageBackground =
   Animated.createAnimatedComponent(ImageBackground);
 
 const DraggableWalletCard = () => {
-  const rotation = useSharedValue(0);
   const isHidden = useSharedValue(0);
   const isCardOut = useSharedValue(0);
+  const hasTriggered = useSharedValue(false); // Monitor when threshold is reached CARD_OUT_OFFSET_Y
   const offset = useSharedValue({ x: 0, y: 0 });
 
   const [isHiddenState, setIsHiddenState] = useState(false);
 
   const animatedWalletStyle = useAnimatedStyle(() => {
-    const scale = interpolate(
+    const isDragging = offset.value.y !== 0;
+    const dragScale = interpolate(
       offset.value.y,
       [0, CARD_OUT_OFFSET_Y],
       [1, 0.9],
-      // isCardOut.value ? [1, 0.9] : [0.9, 1],
       "clamp"
     );
+    const staticScale = interpolate(isCardOut.value, [0, 1], [1, 0.9], "clamp");
+    const finalScale = isDragging ? dragScale : staticScale; // If dragging, use dragScale, else use staticScale
 
-    return { transform: [{ scale: withTiming(scale) }] };
-  }, [offset]);
+    return { transform: [{ scale: withTiming(finalScale) }] };
+  }, [offset, isCardOut]);
 
   const animatedSecondaryCardStyle = useAnimatedStyle(() => {
-    const scale = interpolate(
+    const isDragging = offset.value.y !== 0;
+    const dragScale = interpolate(
       offset.value.y,
       [0, CARD_OUT_OFFSET_Y],
       [0.95, 0.85],
-      // isCardOut.value ? [0.95, 0.85] : [0.85, 0.95],
       "clamp"
     );
+    const staticScale = interpolate(
+      isCardOut.value,
+      [0, 1],
+      [0.95, 0.8],
+      "clamp"
+    );
+    const finalScale = isDragging ? dragScale : staticScale; // If dragging, use dragScale, else use staticScale
+
     const top = interpolate(
       isHidden.value,
       [0, 1],
       [SECONDARY_CARD_TOP, -4],
       "clamp"
     );
-    return { top: withSpring(top), transform: [{ scale: withTiming(scale) }] };
-  }, [offset, isHidden]);
+
+    return {
+      top: withSpring(top),
+      transform: [{ scale: withTiming(finalScale) }],
+    };
+  }, [offset, isHidden, isCardOut]);
 
   const animatedPrimaryCardStyle = useAnimatedStyle(() => {
-    const scale = interpolate(
+    const isDragging = offset.value.y !== 0;
+    const dragScale = interpolate(
       offset.value.y,
       [0, CARD_OUT_OFFSET_Y],
       [1, 1.05],
-      // isCardOut.value ? [1, 1.05] : [1.05, 1],
       "clamp"
     );
+    const staticScale = interpolate(
+      isCardOut.value,
+      [0, 1],
+      [1, 1.065],
+      "clamp"
+    );
+    const finalScale = isDragging ? dragScale : staticScale; // If dragging, use dragScale, else use staticScale
+
     const top = interpolate(
       isHidden.value,
       [0, 1],
@@ -84,23 +107,16 @@ const DraggableWalletCard = () => {
       zIndex,
       top: withSpring(top),
       transform: [
-        { rotate: `${rotation.value}deg` },
+        { scale: withTiming(finalScale) },
+        // { rotate: `${rotation.value}deg` }, // TODO: Add rotation
         { translateY: withSpring(offset.value.y) },
-        { scale },
       ],
     };
-  }, [offset, isHidden, rotation]);
+  }, [offset, isHidden]);
 
   const onDragGesture = Gesture.Pan()
     .onUpdate((e) => {
       if (isHidden.value) return; // If hidden, do nothing
-
-      // Calculate angle based on X and Y drag (in radians)
-      const _radians = Math.atan2(e.translationY, e.translationX);
-      const _degrees = _radians * (180 / Math.PI); // Convert to degrees
-      const adjusted = _degrees + 90; // Adjusted
-      const normalized = adjusted % 45; // Normalize by 45deg
-      rotation.value = normalized; // Invert the angle for more realistic gesture
 
       // Set offset to values
       offset.value = {
@@ -108,20 +124,14 @@ const DraggableWalletCard = () => {
         y: e.translationY,
       };
 
-      // console.log(e.translationY);
-
-      // if (e.translationY <= CARD_OUT_OFFSET_Y) return;
-
-      // let isReset = !isCardOut.value;
-
-      // if (isReset) {
-      //   isCardOut.value = 1;
-      // } else {
-      //   isCardOut.value = 0;
-      // }
+      // If translationY is less than CARD_OUT_OFFSET_Y and has not triggered yet
+      if (e.translationY <= CARD_OUT_OFFSET_Y && !hasTriggered.value) {
+        isCardOut.value = isCardOut.value ? 0 : 1;
+        hasTriggered.value = true;
+      }
     })
     .onEnd(() => {
-      rotation.value = 0;
+      hasTriggered.value = false; // Reset trigger
       offset.value = {
         x: 0,
         y: 0,
@@ -149,7 +159,7 @@ const DraggableWalletCard = () => {
             animatedSecondaryCardStyle,
           ]}
         >
-          <Text>DraggableWalletCard</Text>
+          <Text>DraggableWallard</Text>
           <Text>DraggableWalletCard</Text>
         </Animated.View>
         <AnimatedImageBackground

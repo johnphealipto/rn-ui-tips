@@ -66,7 +66,7 @@ export default function RootLayout() {
         />
         <Stack.Screen
           name="(tips)/draggable-wallet-card"
-          options={{ title: "Draggable Wallet Card" }}
+          options={{ title: "Animated Wallet" }}
         />
       </Stack>
       <StatusBar style="dark" />
